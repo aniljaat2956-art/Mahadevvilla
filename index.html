@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAHADEV VILLA — Hotel Operations & Staff Management</title>
+  <style>
+    /* =====================================================================
+       1. DESIGN TOKENS & RESET
+       ===================================================================== */
+    :root {
+      --espresso: #4a230e;
+      --espresso-dark: #2f1406;
+      --cream-card: #f8eedc;
+      --cream-card-grad: linear-gradient(180deg, #fff8eb 0%, #f3e2c3 100%);
+      --gold-border: #c5963a;
+      --gold-bright: #e3b24c;
+      --ink-dark: #3a1b0a;
+      --ink-muted: #7c5636;
+      --emerald: #15803d;
+      --emerald-bg: #dcfce7;
+      --rose: #be123c;
+      --rose-bg: #ffe4e6;
+      --amber: #b45309;
+      --amber-bg: #fef3c7;
+      --shadow-soft: 0 8px 20px rgba(47, 20, 6, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink-dark);
+      background-color: #2b1508;
+      overflow-x: hidden;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =====================================================================
+       2. LOBBY SCENE BACKDROP (CARVED ARCH, SHELVES, SOFA, STATUE, MARBLE)
+       ===================================================================== */
+    .app-shell {
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+      background:
+        radial-gradient(circle at 50% 14%, rgba(255, 224, 158, 0.72) 0%, rgba(226, 173, 98, 0.45) 38%, rgba(124, 72, 28, 0.72) 82%, rgba(45, 21, 7, 0.92) 100%),
+        linear-gradient(180deg, #e7b874 0%, #cf9852 54%, #b58455 54.5%, #e8cdb0 100%);
+      padding-bottom: 92px;
+    }
+
+    /* Decorative Lobby Architectural Layer (Pure CSS/SVG, zero broken URLs) */
+    .lobby-backdrop {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .lobby-arch-left {
+      position: absolute;
+      top: -40px;
+      left: -65px;
+      width: 240px;
+      height: 540px;
+      border-top-right-radius: 170px;
+      border: 14px solid rgba(138, 72, 24, 0.42);
+      background: radial-gradient(circle at 30% 25%, rgba(255, 212, 125, 0.45), rgba(142, 76, 26, 0.25));
+      opacity: 0.75;
+    }
+
+    .lobby-shelf-right {
+      position: absolute;
+      top: 70px;
+      right: -28px;
+      width: 170px;
+      height: 360px;
+      background: linear-gradient(180deg, rgba(168, 102, 24, 0.45), rgba(110, 58, 12, 0.55));
+      border-left: 6px solid rgba(255, 214, 128, 0.55);
+      border-radius: 12px;
+      opacity: 0.65;
+    }
+
+    .lobby-sofa-right {
+      position: absolute;
+      bottom: 84px;
+      right: -36px;
+      width: 250px;
+      height: 155px;
+      background: linear-gradient(145deg, rgba(244, 143, 177, 0.58), rgba(190, 65, 112, 0.52));
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: 2px solid rgba(255, 215, 130, 0.45);
+      opacity: 0.72;
+    }
+
+    .lobby-statue-left {
+      position: absolute;
+      bottom: 86px;
+      left: 10px;
+      width: 82px;
+      height: 148px;
+      opacity: 0.62;
+    }
+
+    .lobby-floor-shine {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 28vh;
+      background: linear-gradient(180deg, rgba(255, 241, 218, 0.35), rgba(186, 142, 102, 0.55));
+      border-top: 2px solid rgba(255, 232, 185, 0.5);
+    }
+
+    .content-layer {
+      position: relative;
+      z-index: 2;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 14px 14px 24px;
+    }
+
+    .content-layer.wide-mode {
+      max-width: 920px;
+    }
+
+    /* =====================================================================
+       3. TOP BAR, ARCH LOGO CREST & CONTINUOUS BELL BANNER
+       ===================================================================== */
+    .top-chrome {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .hamburger-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 248, 235, 0.45);
+      background: rgba(74, 35, 14, 0.45);
+      color: #fff8eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+
+    .bell-trigger-wrap {
+      position: relative;
+    }
+
+    .bell-top-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(255, 248, 235, 0.75);
+      background: linear-gradient(180deg, #fff9ec 0%, #f1dec0 100%);
+      color: var(--espresso);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.14s ease;
+    }
+
+    .bell-top-btn:active {
+      transform: scale(0.95);
+    }
+
+    .bell-top-btn.ringing {
+      background: linear-gradient(180deg, #ffe4e6 0%, #fda4af 100%);
+      color: #9f1239;
+      border-color: #e11d48;
+      animation: bellSwing 0.75s infinite ease-in-out;
+    }
+
+    @keyframes bellSwing {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(15deg); }
+      40% { transform: rotate(-15deg); }
+      60% { transform: rotate(10deg); }
+      80% { transform: rotate(-10deg); }
+    }
+
+    .bell-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 21px;
+      height: 21px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #ef233c;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #fff8eb;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    }
+
+    .crest-card {
+      width: 176px;
+      background: linear-gradient(180deg, #fffaf0 0%, #f5e5c8 100%);
+      border: 2.5px solid var(--gold-border);
+      border-radius: 14px;
+      padding: 8px 10px 7px;
+      text-align: center;
+      box-shadow: 0 10px 24px rgba(47, 20, 6, 0.32);
+    }
+
+    .crest-title {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--espresso);
+      margin-top: 3px;
+    }
+
+    .welcome-pill {
+      margin-top: 10px;
+      background: linear-gradient(90deg, rgba(255, 250, 240, 0.96) 0%, rgba(246, 228, 194, 0.96) 50%, rgba(255, 250, 240, 0.96) 100%);
+      border: 2px solid var(--gold-border);
+      border-radius: 16px;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: var(--shadow-soft);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--espresso);
+    }
+
+    /* Active Assembly Bell Alert Banner */
+    .alert-banner {
+      margin-top: 12px;
+      background: linear-gradient(135deg, #9f1239 0%, #be123c 55%, #881337 100%);
+      color: #ffffff;
+      border: 2px solid #fda4af;
+      border-radius: 18px;
+      padding: 13px 14px;
+      box-shadow: 0 14px 28px rgba(136, 19, 55, 0.45);
+    }
+
+    .alert-banner-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #ffe4e6;
+    }
+
+    .alert-banner-msg {
+      font-size: 14px;
+      font-weight: 800;
+      margin: 5px 0 9px;
+      line-height: 1.35;
+    }
+
+    .alert-banner-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* =====================================================================
+       4. 3-COLUMN CREAM-GOLD MODULE GRID & BUTTONS
+       ===================================================================== */
+    .grid-3 {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 11px;
+    }
+
+    .grid-2-bottom {
+      margin-top: 11px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+      max-width: 72%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .villa-tile {
+      background: var(--cream-card-grad);
+      border: 2px solid var(--gold-border);
+      border-radius: 18px;
+      padding: 13px 8px 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--espresso);
+      box-shadow: 0 7px 16px rgba(47, 20, 6, 0.25);
+      transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.13s ease;
+    }
+
+    .villa-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 11px 22px rgba(47, 20, 6, 0.34);
+    }
+
+    .villa-tile:active {
+      transform: scale(0.97);
+    }
+
+    .villa-tile.selected {
+      background: linear-gradient(180deg, #582a11 0%, #371807 100%);
+      color: #ffe5a3;
+      border-color: #f6c453;
+    }
+
+    .villa-tile.selected svg {
+      color: #ffe5a3;
+    }
+
+    .villa-tile svg {
+      width: 30px;
+      height: 30px;
+      color: var(--espresso);
+      flex-shrink: 0;
+    }
+
+    .villa-tile-label {
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    /* =====================================================================
+       5. MODULE WORKSPACE CARD, FORMS, TABLES & LOGIN CARD
+       ===================================================================== */
+    .surface-card {
+      margin-top: 14px;
+      background: rgba(255, 250, 240, 0.96);
+      border: 2px solid var(--gold-border);
+      border-radius: 20px;
+      padding: 16px;
+      color: var(--ink-dark);
+      box-shadow: 0 14px 30px rgba(47, 20, 6, 0.34);
+    }
+
+    .surface-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 11px;
+      margin-bottom: 14px;
+      border-bottom: 1.5px solid rgba(197, 150, 58, 0.35);
+    }
+
+    .surface-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--espresso);
+    }
+
+    .surface-sub {
+      font-size: 12px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 11px;
+      padding: 8px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.12s ease, opacity 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #683215 0%, #441e0a 100%);
+      color: #fff6e5;
+      border: 1px solid #c5963a;
+    }
+
+    .btn-gold {
+      background: linear-gradient(180deg, #f3c45b 0%, #c8912b 100%);
+      color: #2f1406;
+      border: 1px solid #8a5b11;
+    }
+
+    .btn-emerald {
+      background: #15803d;
+      color: #ffffff;
+    }
+
+    .btn-rose {
+      background: #be123c;
+      color: #ffffff;
+    }
+
+    .btn-soft {
+      background: #efe0c2;
+      color: var(--espresso);
+      border: 1px solid #c5963a;
+    }
+
+    .btn-white {
+      background: #ffffff;
+      color: #9f1239;
+    }
+
+    .field-group {
+      margin-bottom: 11px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--espresso);
+      margin-bottom: 4px;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1.5px solid #c5963a;
+      background: #ffffff;
+      color: var(--ink-dark);
+      font-size: 12.5px;
+      font-family: inherit;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      outline: 2px solid rgba(197, 150, 58, 0.35);
+      border-color: var(--espresso);
+    }
+
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #dfbe7e;
+      background: #fffdf8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    th {
+      background: #f2e1c0;
+      color: var(--espresso);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 9px 10px;
+      text-align: left;
+      border-bottom: 1.5px solid #d4aa5b;
+    }
+
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #efe0c2;
+      vertical-align: top;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    .pill-green {
+      background: var(--emerald-bg);
+      color: var(--emerald);
+    }
+
+    .pill-rose {
+      background: var(--rose-bg);
+      color: var(--rose);
+    }
+
+    .pill-amber {
+      background: var(--amber-bg);
+      color: var(--amber);
+    }
+
+    .slot-box {
+      background: #fdf6e7;
+      border: 1px solid #e1be7b;
+      border-radius: 10px;
+      padding: 8px;
+      margin-bottom: 6px;
+    }
+
+    .slot-time {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--espresso);
+      margin-bottom: 4px;
+    }
+
+    .score-track {
+      width: 100%;
+      height: 8px;
+      background: #ead5ad;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .score-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c5963a 0%, #15803d 100%);
+      border-radius: 999px;
+    }
+
+    .live-sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #16a34a;
+    }
+
+    .room-lookup-banner {
+      background: linear-gradient(135deg, #fff5dc 0%, #faebd0 100%);
+      border: 1.5px solid #c5963a;
+      border-radius: 14px;
+      padding: 11px 12px;
+      margin-bottom: 12px;
+    }
+
+    /* =====================================================================
+       6. BOTTOM DARK-BROWN PILL NAVIGATION BAR
+       ===================================================================== */
+    .bottom-nav-wrap {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      z-index: 20;
+      padding: 0 12px;
+      pointer-events: none;
+    }
+
+    .bottom-nav {
+      pointer-events: auto;
+      max-width: 520px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #5a2b12 0%, #3b1908 100%);
+      border: 2px solid #c5963a;
+      border-radius: 26px;
+      padding: 7px 10px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: center;
+      box-shadow: 0 12px 28px rgba(24, 9, 2, 0.55);
+    }
+
+    .nav-item {
+      background: transparent;
+      border: none;
+      color: #f3dfc1;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 6px;
+      border-radius: 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      position: relative;
+    }
+
+    .nav-item.active {
+      color: #ffd573;
+      font-weight: 800;
+    }
+
+    .nav-item.active::after {
+      content: "";
+      width: 24px;
+      height: 3px;
+      border-radius: 999px;
+      background: #ffd573;
+      margin-top: 2px;
+    }
+
+    .nav-item:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 18%;
+      height: 64%;
+      width: 1px;
+      background: rgba(243, 223, 193, 0.25);
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Toast Feedback */
+    .toast-area {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      width: calc(100% - 28px);
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      background: #2f1406;
+      color: #fff8eb;
+      border: 1.5px solid #e3b24c;
+      border-radius: 12px;
+      padding: 9px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Pure CSS/SVG Architectural Lobby Backdrop -->
+    <div class="lobby-backdrop" aria-hidden="true">
+      <div class="lobby-arch-left"></div>
+      <div class="lobby-shelf-right"></div>
+      <div class="lobby-sofa-right"></div>
+      <svg class="lobby-statue-left" viewBox="0 0 90 160" fill="none">
+        <rect x="20" y="114" width="50" height="8" rx="4" fill="#d97706" />
+        <line x1="28" y1="122" x2="24" y2="154" stroke="#b45309" stroke-width="4" />
+        <line x1="62" y1="122" x2="66" y2="154" stroke="#b45309" stroke-width="4" />
+        <ellipse cx="45" cy="96" rx="22" ry="18" fill="#1c1917" />
+        <path d="M30 82 C30 58, 60 58, 60 82 Z" fill="#1c1917" />
+        <circle cx="45" cy="45" r="13" fill="#1c1917" />
+        <path d="M31 40 C34 25, 58 25, 59 40 Z" fill="#ea580c" />
+      </svg>
+      <div class="lobby-floor-shine"></div>
+    </div>
+
+    <div class="toast-area" id="toast-area"></div>
+
+    <!-- ===================================================================
+         LOGIN GATE (MOBILE: 9351948543, OTP: 2956)
+         =================================================================== -->
+    <div id="login-view" class="content-layer">
+      <div class="top-chrome" style="justify-content:center;margin-top:8px;">
+        <div class="crest-card" style="width:205px;">
+          <svg width="78" height="46" viewBox="0 0 80 48" fill="none" style="margin:0 auto;display:block;">
+            <rect x="4" y="3" width="72" height="42" rx="4" stroke="#5b2c11" stroke-width="2.2" fill="#fffdf8" />
+            <path d="M18 45 V22 C18 11, 62 11, 62 22 V45" stroke="#5b2c11" stroke-width="2.2" fill="none" />
+            <path d="M27 45 V25 C27 18, 53 18, 53 25 V45" stroke="#5b2c11" stroke-width="1.8" fill="none" />
+            <circle cx="40" cy="31" r="3" fill="#5b2c11" />
+          </svg>
+          <div class="crest-title">MAHADEV VILLA</div>
+        </div>
+      </div>
+
+      <div class="surface-card">
+        <div class="surface-head">
+          <div>
+            <div class="surface-title">Staff &amp; Admin Login</div>
+            <div class="surface-sub">Mobile: <strong>9351948543</strong> &bull; OTP: <strong>2956</strong></div>
+          </div>
+          <button type="button" class="btn btn-soft" onclick="quickFillCredentials()">Quick-Fill</button>
+        </div>
+
+        <form onsubmit="handleLoginSubmit(event)">
+          <div class="field-group">
+            <label class="field-label" for="login-mobile">Mobile Number</label>
+            <input id="login-mobile" type="tel" class="input" placeholder="Enter 9351948543" required />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="login-otp">OTP Code</label>
+            <input id="login-otp" type="text" class="input" placeholder="Enter 2956" maxlength="6" required />
+          </div>
+          <p id="login-error" class="hidden" style="color:#be123c;font-size:12px;font-weight:800;margin-bottom:8px;"></p>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:10px 14px;font-size:13px;">
+            Login to Mahadev Villa
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         MAIN DASHBOARD & INTERACTIVE MODULES
+         =================================================================== -->
+    <div id="main-app-view" class="content-layer wide-mode hidden">
+      <!-- Top Bar: Menu, Mahadev Villa Arch Logo, Notification Bell + Badge -->
+      <div class="top-chrome">
+        <button type="button" class="hamburger-btn" title="Home Dashboard" onclick="selectModule('home')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        <div class="crest-card" onclick="selectModule('home')" style="cursor:pointer;">
+          <svg width="82" height="44" viewBox="0 0 84 46" fill="none" style="margin:0 auto;display:block;">
+            <rect x="4" y="2" width="76" height="42" rx="4" stroke="#5b2c11" stroke-width="2" fill="#fffdf8" />
+            <path d="M18 44 V21 C18 10, 66 10, 66 21 V44" stroke="#5b2c11" stroke-width="2" fill="none" />
+            <path d="M28 44 V24 C28 17, 56 17, 56 24 V44" stroke="#5b2c11" stroke-width="1.6" fill="none" />
+            <path d="M14 44 C14 37, 20 37, 20 44" stroke="#5b2c11" stroke-width="1.5" />
+            <path d="M64 44 C64 37, 70 37, 70 44" stroke="#5b2c11" stroke-width="1.5" />
+          </svg>
+          <div class="crest-title">MAHADEV VILLA</div>
+        </div>
+
+        <div class="bell-trigger-wrap">
+          <button id="bell-top-btn" type="button" class="bell-top-btn" title="Ring Assembly Bell + Female Voice" onclick="startAssemblyBell()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2a7 7 0 0 0-7 7v4.29l-1.71 1.7A1 1 0 0 0 4 16.7V17h16v-.3a1 1 0 0 0-.29-.71L19 13.29V9a7 7 0 0 0-7-7Zm0 20a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Z" />
+            </svg>
+          </button>
+          <span id="bell-badge" class="bell-badge">2</span>
+        </div>
+      </div>
+
+      <!-- Welcome Back, Admin & Date Pill -->
+      <div class="welcome-pill">
+        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+          <span style="font-size:15px;">👑</span>
+          <span>Welcome Back, Admin</span>
+          <span class="live-sync-pill" title="Real-Time Sync across devices/tabs">
+            <span class="live-dot"></span>
+            <span id="live-sync-label">Real-Time Sync ON</span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:14px;">🗓️</span>
+          <span>24 Nov 2026</span>
+        </div>
+      </div>
+
+      <!-- Continuous Assembly Bell + Female Voice Banner -->
+      <div id="bell-active-banner" class="alert-banner hidden">
+        <div class="alert-banner-top">
+          <span>🔔 Continuous Bell + Female Voice Active</span>
+          <span id="bell-ack-count">Ack: 0 / 4</span>
+        </div>
+        <div id="bell-banner-text" class="alert-banner-msg">
+          Attention please! Sabhi bell boy turant lobby mein aayein!
+        </div>
+        <div class="alert-banner-btns">
+          <button type="button" class="btn btn-soft" onclick="playBellAndVoiceOnce()">🔊 Replay Now</button>
+          <button type="button" class="btn btn-emerald" onclick="acknowledgeAndStopBell()">✓ Acknowledge &amp; Stop Bell</button>
+          <button type="button" class="btn btn-white" onclick="stopAssemblyBell()">⏹ Stop Bell</button>
+        </div>
+      </div>
+
+      <!-- 3-Column Module Grid (12 Modules) -->
+      <div class="grid-3" id="grid-12"></div>
+
+      <!-- Bottom 2 Centered Module Cards (Admin Settings & Premium Dashboard) -->
+      <div class="grid-2-bottom" id="grid-2"></div>
+
+      <!-- Active Module Interactive Workspace -->
+      <div id="module-workspace" class="surface-card"></div>
+    </div>
+
+    <!-- Bottom Pill Navigation Bar -->
+    <nav id="bottom-nav-wrap" class="bottom-nav-wrap hidden" aria-label="Primary Navigation">
+      <div class="bottom-nav">
+        <button id="bnav-home" type="button" class="nav-item active" onclick="bottomNavAction('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5L12 3Z" />
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button id="bnav-reports" type="button" class="nav-item" onclick="bottomNavAction('reports')">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="4" y="11" width="3.5" height="9" rx="1" />
+            <rect x="10.25" y="6" width="3.5" height="14" rx="1" />
+            <rect x="16.5" y="13" width="3.5" height="7" rx="1" />
+          </svg>
+          <span>Reports</span>
+        </button>
+
+        <button id="bnav-profile" type="button" class="nav-item" onclick="bottomNavAction('profile')">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-3.3 3.6-5.5 8-5.5s8 2.2 8 5.5v1H4v-1Z" />
+          </svg>
+          <span>Profile</span>
+        </button>
+
+        <button id="bnav-logout" type="button" class="nav-item" onclick="bottomNavAction('logout')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    /* =====================================================================
+       1. APPLICATION STATE & SEED DATA
+       ===================================================================== */
+    const AUTH_MOBILE = "9351948543";
+    const AUTH_OTP = "2956";
+    const ANNOUNCEMENT_TEXT = "Attention please! Sabhi bell boy turant lobby mein aayein!";
+
+    const FIELDS_LIST = [
+      "Bell Boy",
+      "Laundry Field",
+      "Towel Field",
+      "Room Inspection",
+      "Lobby & Front Desk",
+      "Housekeeping"
+    ];
+
+    const TOP_12_MODULES = [
+      { id: "staff", label: "Staff Management", icon: "users" },
+      { id: "attendance", label: "Attendance Management", icon: "calendar-check" },
+      { id: "leave", label: "Leave Management", icon: "plane" },
+      { id: "duty", label: "Duty Management", icon: "cap" },
+      { id: "laundry", label: "Laundry Management", icon: "washer" },
+      { id: "towel", label: "Towel Duty Management", icon: "stack" },
+      { id: "bellboy", label: "Bellboy Management", icon: "cloche" },
+      { id: "inspection", label: "Room Inspection", icon: "search-bed" },
+      { id: "complaint", label: "Complaint Management", icon: "bubble-alert" },
+      { id: "performance", label: "Staff Performance", icon: "chart" },
+      { id: "inventory", label: "Inventory Management", icon: "box" },
+      { id: "reports", label: "Reports & History", icon: "clipboard" }
+    ];
+
+    const BOTTOM_2_MODULES = [
+      { id: "settings", label: "Admin Settings", icon: "gear" },
+      { id: "premium", label: "Premium Dashboard", icon: "diamond" }
+    ];
+
+    let appState = {
+      authenticated: false,
+      activeModule: "duty",
+      activeBottomTab: "home",
+      voiceMessage: ANNOUNCEMENT_TEXT,
+      bellLooping: false,
+      bellRangAt: "",
+      acknowledgedIds: [],
+      roomSearchQuery: "",
+      itemSearchQuery: "",
+      roomsList: ["Room 101", "Room 102", "Room 103", "Room 201", "Room 202", "Room 204", "Room 301"],
+      catalogItems: ["Iron", "Hot Water Kettle", "Hair Dryer", "Comb"],
+      staff: [
+        {
+          id: 1,
+          name: "Siddharth",
+          field: "Bell Boy",
+          bellStatus: "Free",
+          onDuty: true,
+          attendanceStatus: "Present",
+          checkIn: "09:00 AM",
+          checkOut: "--:--",
+          score: 94,
+          checkInsCount: 16,
+          shiftSlots: {
+            "09:00 AM – 01:00 PM": "Floor se laundry uthana & lobby assist",
+            "01:00 PM – 04:00 PM": "Upar chhat se towel lekar aana & room drop",
+            "04:00 PM – 09:00 PM": "Guest room inspection & check-in duty"
+          }
+        },
+        {
+          id: 2,
+          name: "Mahendra",
+          field: "Bell Boy",
+          bellStatus: "Busy (Room 202)",
+          onDuty: true,
+          attendanceStatus: "Present",
+          checkIn: "08:58 AM",
+          checkOut: "--:--",
+          score: 91,
+          checkInsCount: 19,
+          shiftSlots: {
+            "09:00 AM – 01:00 PM": "Main gate luggage & guest check-in duty",
+            "01:00 PM – 04:00 PM": "Floor se laundry uthana (1st & 2nd floor)",
+            "04:00 PM – 09:00 PM": "Lobby & guest room check-in duty"
+          }
+        },
+        {
+          id: 3,
+          name: "Rakesh",
+          field: "Laundry Field",
+          bellStatus: "Free",
+          onDuty: true,
+          attendanceStatus: "Present",
+          checkIn: "09:04 AM",
+          checkOut: "--:--",
+          score: 88,
+          checkInsCount: 12,
+          shiftSlots: {
+            "09:00 AM – 01:00 PM": "Floor se laundry uthana & sorting",
+            "01:00 PM – 04:00 PM": "Laundry press & linen dispatch",
+            "04:00 PM – 09:00 PM": "Evening laundry collection & room drop"
+          }
+        },
+        {
+          id: 4,
+          name: "Priya",
+          field: "Towel Field",
+          bellStatus: "Free",
+          onDuty: false,
+          attendanceStatus: "Absent",
+          checkIn: "--:--",
+          checkOut: "--:--",
+          score: 96,
+          checkInsCount: 21,
+          shiftSlots: {
+            "09:00 AM – 01:00 PM": "Towel inventory & room setup",
+            "01:00 PM – 04:00 PM": "1:00–2:00 & 2:00–4:00: Chhat se towel lana",
+            "04:00 PM – 09:00 PM": "4:00–9:00 PM: Room & lobby towel refill"
+          }
+        }
+      ],
+      towelSchedule: [
+        { slot: "1:00 PM – 2:00 PM", assignee: "Priya", detail: "Chhat (terrace) se dry towels utarna & count karna" },
+        { slot: "2:00 PM – 4:00 PM", assignee: "Siddharth", detail: "Towel folding, trolley loading & floor supply" },
+        { slot: "4:00 PM – 9:00 PM", assignee: "Priya", detail: "Evening bath/hand towel refill & guest requests" }
+      ],
+      inspections: [
+        {
+          id: 1,
+          room: "Room 101",
+          guest: "Mr. Arvind Joshi",
+          staff: "Siddharth",
+          clean: true,
+          noDamage: true,
+          amenitiesOk: true,
+          checkInTime: "10:25 AM"
+        },
+        {
+          id: 2,
+          room: "Room 202",
+          guest: "Mrs. Kavita Nair",
+          staff: "Mahendra",
+          clean: true,
+          noDamage: true,
+          amenitiesOk: true,
+          checkInTime: "01:40 PM"
+        }
+      ],
+      complaints: [
+        {
+          id: 1,
+          room: "Room 103",
+          issue: "Bathroom water tap slow flow & extra bath towel",
+          staff: "Siddharth",
+          status: "Open"
+        }
+      ],
+      inventory: [
+        {
+          id: 1,
+          item: "Iron",
+          room: "Room 101",
+          givenBy: "Siddharth",
+          givenTime: "11:15 AM",
+          returnedBy: null,
+          returnTime: null,
+          activeInRoom: true
+        },
+        {
+          id: 2,
+          item: "Iron",
+          room: "Room 204",
+          givenBy: "Mahendra",
+          givenTime: "02:05 PM",
+          returnedBy: null,
+          returnTime: null,
+          activeInRoom: true
+        },
+        {
+          id: 3,
+          item: "Hot Water Kettle",
+          room: "Room 102",
+          givenBy: "Priya",
+          givenTime: "12:10 PM",
+          returnedBy: null,
+          returnTime: null,
+          activeInRoom: true
+        },
+        {
+          id: 4,
+          item: "Hair Dryer",
+          room: "Room 201",
+          givenBy: "Siddharth",
+          givenTime: "09:50 AM",
+          returnedBy: "Rakesh",
+          returnTime: "12:00 PM",
+          activeInRoom: false
+        },
+        {
+          id: 5,
+          item: "Comb",
+          room: "Room 105",
+          givenBy: "Mahendra",
+          givenTime: "01:20 PM",
+          returnedBy: null,
+          returnTime: null,
+          activeInRoom: true
+        }
+      ],
+      leaves: [
+        {
+          id: 1,
+          staff: "Siddharth",
+          fromDate: "2026-11-27",
+          toDate: "2026-11-28",
+          reason: "Family function — shift cover arranged",
+          status: "Pending"
+        },
+        {
+          id: 2,
+          staff: "Rakesh",
+          fromDate: "2026-11-26",
+          toDate: "2026-11-26",
+          reason: "Medical checkup",
+          status: "Pending"
+        }
+      ]
+    };
+
+    const STORAGE_KEY = "mahadev_villa_realtime_state_v1";
+    const SYNC_CHANNEL_NAME = "mahadev_villa_sync_channel";
+    let syncChannel = null;
+    let suppressBroadcast = false;
+
+    function cloneSharedData() {
+      return {
+        voiceMessage: appState.voiceMessage,
+        bellLooping: appState.bellLooping,
+        bellRangAt: appState.bellRangAt,
+        acknowledgedIds: [...appState.acknowledgedIds],
+        roomsList: [...appState.roomsList],
+        catalogItems: [...appState.catalogItems],
+        staff: JSON.parse(JSON.stringify(appState.staff)),
+        towelSchedule: JSON.parse(JSON.stringify(appState.towelSchedule)),
+        inspections: JSON.parse(JSON.stringify(appState.inspections)),
+        complaints: JSON.parse(JSON.stringify(appState.complaints)),
+        inventory: JSON.parse(JSON.stringify(appState.inventory)),
+        leaves: JSON.parse(JSON.stringify(appState.leaves))
+      };
+    }
+
+    function applySharedData(incoming) {
+      if (!incoming || typeof incoming !== "object") return;
+      if (typeof incoming.voiceMessage === "string") appState.voiceMessage = incoming.voiceMessage;
+      if (typeof incoming.bellLooping === "boolean") appState.bellLooping = incoming.bellLooping;
+      if (typeof incoming.bellRangAt === "string") appState.bellRangAt = incoming.bellRangAt;
+      if (Array.isArray(incoming.acknowledgedIds)) appState.acknowledgedIds = [...incoming.acknowledgedIds];
+      if (Array.isArray(incoming.roomsList)) appState.roomsList = [...incoming.roomsList];
+      if (Array.isArray(incoming.catalogItems)) appState.catalogItems = [...incoming.catalogItems];
+      if (Array.isArray(incoming.staff)) appState.staff = incoming.staff;
+      if (Array.isArray(incoming.towelSchedule)) appState.towelSchedule = incoming.towelSchedule;
+      if (Array.isArray(incoming.inspections)) appState.inspections = incoming.inspections;
+      if (Array.isArray(incoming.complaints)) appState.complaints = incoming.complaints;
+      if (Array.isArray(incoming.inventory)) appState.inventory = incoming.inventory;
+      if (Array.isArray(incoming.leaves)) appState.leaves = incoming.leaves;
+    }
+
+    function saveAndBroadcast(toastMessage) {
+      if (suppressBroadcast) return;
+      try {
+        const snapshot = cloneSharedData();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+        if (syncChannel) {
+          syncChannel.postMessage({
+            type: "STATE_UPDATE",
+            payload: snapshot,
+            toastMessage: toastMessage || null,
+            at: Date.now()
+          });
+        }
+      } catch (e) {}
+    }
+
+    function loadPersistedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          applySharedData(JSON.parse(raw));
+        } else {
+          saveAndBroadcast(null);
+        }
+      } catch (e) {}
+
+      try {
+        if ("BroadcastChannel" in window) {
+          syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+          syncChannel.onmessage = (event) => {
+            if (event.data && event.data.type === "STATE_UPDATE") {
+              suppressBroadcast = true;
+              applySharedData(event.data.payload);
+              renderShell();
+              suppressBroadcast = false;
+              const lbl = document.getElementById("live-sync-label");
+              if (lbl) lbl.textContent = "Synced Just Now";
+              if (event.data.toastMessage && appState.authenticated) {
+                showToast("Live Sync: " + event.data.toastMessage);
+              }
+            }
+          };
+        }
+      } catch (e) {}
+
+      window.addEventListener("storage", (e) => {
+        if (e.key === STORAGE_KEY && e.newValue) {
+          try {
+            suppressBroadcast = true;
+            applySharedData(JSON.parse(e.newValue));
+            renderShell();
+            suppressBroadcast = false;
+          } catch (err) {}
+        }
+      });
+    }
+
+    /* =====================================================================
+       2. SVG ICON BUILDER (INLINE SVG FOR ALL 14 MODULES)
+       ===================================================================== */
+    function renderModuleSvg(type) {
+      switch (type) {
+        case "users":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><circle cx="13" cy="12" r="4.2"/><circle cx="24" cy="13" r="3.5"/><path d="M5.5 25.5c0-3.5 3.4-5.8 7.5-5.8s7.5 2.3 7.5 5.8V27h-15v-1.5Zm15 1.5v-1.2c0-1.6-.7-3-1.8-4 1.3-.4 2.8-.6 4.3-.6 3.5 0 6.5 1.9 6.5 4.8V27h-9Z"/></svg>`;
+        case "calendar-check":
+          return `<svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="24" height="22" rx="4"/><line x1="6" y1="15" x2="30" y2="15"/><line x1="12" y1="5" x2="12" y2="10"/><line x1="24" y1="5" x2="24" y2="10"/><polyline points="13 22 16.5 25.5 23.5 19.5"/></svg>`;
+        case "plane":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><path d="M31 15.2 20.5 17 13.5 7.5 11 8.4l4.2 9.9-6.6 1.3-3.4-3-1.7.7 2.2 5.3-1.3 4.8 1.6.7 3.8-3.4 18.8-3.7c1.6-.3 2.5-1.7 2.2-3.1-.3-1.2-1.4-2-2.8-1.7Z"/></svg>`;
+        case "cap":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><path d="M18 7c-6.5 0-11 3.8-11 8.5V18h22v-2.5C29 10.8 24.5 7 18 7Z"/><path d="M10 19.5v4.5c0 2.8 3.6 5 8 5s8-2.2 8-5v-4.5H10Z"/><circle cx="18" cy="13.5" r="2.2" fill="#f8eedc"/></svg>`;
+        case "washer":
+          return `<svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="7" y="5" width="22" height="26" rx="3.5"/><line x1="7" y1="12" x2="29" y2="12"/><circle cx="12" cy="8.5" r="1.2" fill="currentColor"/><circle cx="16" cy="8.5" r="1.2" fill="currentColor"/><circle cx="18" cy="21.5" r="6.5"/><path d="M13.5 21.5c1.8-2 3.2-2 4.5 0s2.7 2 4.5 0"/></svg>`;
+        case "stack":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><rect x="7" y="9" width="22" height="5.5" rx="2.5"/><rect x="7" y="16" width="22" height="5.5" rx="2.5"/><rect x="7" y="23" width="22" height="5.5" rx="2.5"/></svg>`;
+        case "cloche":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><circle cx="18" cy="9.5" r="2"/><path d="M18 12.5c-6.4 0-11.5 4.8-12 11h24c-.5-6.2-5.6-11-12-11Z"/><rect x="4" y="25.5" width="28" height="3.5" rx="1.75"/></svg>`;
+        case "search-bed":
+          return `<svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="16.5" cy="16.5" r="8.5"/><line x1="22.8" y1="22.8" x2="30" y2="30"/><path d="M11 18.5v-4m0 2.5h11v2"/></svg>`;
+        case "bubble-alert":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><path d="M8 7h20a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H15l-6 5v-5H8a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3Z"/><rect x="16.7" y="11.5" width="2.6" height="7" rx="1.3" fill="#f8eedc"/><circle cx="18" cy="21.5" r="1.5" fill="#f8eedc"/></svg>`;
+        case "chart":
+          return `<svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 25 14 18 19 22 29 11"/><polyline points="23 11 29 11 29 17"/><line x1="7" y1="29" x2="29" y2="29"/></svg>`;
+        case "box":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><path d="M18 5 7 11.2v13.6L18 31l11-6.2V11.2L18 5Zm0 2.6 7.8 4.4-7.8 4.4-7.8-4.4L18 7.6Zm-8.5 6.4 7.2 4.1v10.2l-7.2-4.1V14Z"/></svg>`;
+        case "clipboard":
+          return `<svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="20" height="22" rx="3"/><path d="M14 6h8v4h-8z"/><line x1="13" y1="16" x2="23" y2="16"/><line x1="13" y1="21" x2="21" y2="21"/></svg>`;
+        case "gear":
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><path d="M18 12.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm11.2 4.2-2.4-.6a9.2 9.2 0 0 0-.9-2.2l1.4-2.1a1 1 0 0 0-.1-1.3l-2.1-2.1a1 1 0 0 0-1.3-.1l-2.1 1.4a9.2 9.2 0 0 0-2.2-.9l-.6-2.4a1 1 0 0 0-1-.8h-3a1 1 0 0 0-1 .8l-.6 2.4a9.2 9.2 0 0 0-2.2.9l-2.1-1.4a1 1 0 0 0-1.3.1l-2.1 2.1a1 1 0 0 0-.1 1.3l1.4 2.1a9.2 9.2 0 0 0-.9 2.2l-2.4.6a1 1 0 0 0-.8 1v3a1 1 0 0 0 .8 1l2.4.6a9.2 9.2 0 0 0 .9 2.2l-1.4 2.1a1 1 0 0 0 .1 1.3l2.1 2.1a1 1 0 0 0 1.3.1l2.1-1.4a9.2 9.2 0 0 0 2.2.9l.6 2.4a1 1 0 0 0 1 .8h3a1 1 0 0 0 1-.8l.6-2.4a9.2 9.2 0 0 0 2.2-.9l2.1 1.4a1 1 0 0 0 1.3-.1l2.1-2.1a1 1 0 0 0 .1-1.3l-1.4-2.1a9.2 9.2 0 0 0 .9-2.2l2.4-.6a1 1 0 0 0 .8-1v-3a1 1 0 0 0-.8-1Z"/></svg>`;
+        case "diamond":
+        default:
+          return `<svg viewBox="0 0 36 36" fill="currentColor"><polygon points="11,8 25,8 31,15 18,30 5,15"/></svg>`;
+      }
+    }
+
+    /* =====================================================================
+       3. CONTINUOUS BELL CHIME + FEMALE VOICE ENGINE
+       ===================================================================== */
+    let audioCtx = null;
+    let bellInterval = null;
+    let voiceInterval = null;
+
+    function ensureAudioContext() {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        if (!audioCtx) audioCtx = new Ctx();
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume().catch(() => {});
+        }
+        return audioCtx;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function playReceptionBellChime() {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+
+      const strike = (offsetSec, freq) => {
+        const start = ctx.currentTime + offsetSec;
+        const ratios = [1, 2.0, 2.75, 4.18];
+        ratios.forEach((r, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = idx === 0 ? "triangle" : "sine";
+          osc.frequency.setValueAtTime(freq * r, start);
+
+          const peak = 0.26 / (idx + 1);
+          gain.gain.setValueAtTime(0.0001, start);
+          gain.gain.exponentialRampToValueAtTime(peak, start + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.15);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + 1.2);
+        });
+      };
+
+      // Multi-ring reception chime burst
+      strike(0.0, 1046.5);
+      strike(0.32, 1318.5);
+      strike(0.68, 1046.5);
+      strike(1.04, 1567.98);
+    }
+
+    function selectFemaleSpeechVoice(voices) {
+      if (!voices || !voices.length) return null;
+      const hints = ["female", "zira", "samantha", "priya", "heera", "lekha", "veena", "google हिन्दी", "hi-in", "en-in"];
+      for (const h of hints) {
+        const match = voices.find(
+          (v) => v.name.toLowerCase().includes(h) || v.lang.toLowerCase().includes(h)
+        );
+        if (match) return match;
+      }
+      return voices[0];
+    }
+
+    function speakFemaleAnnouncement() {
+      try {
+        if (!("speechSynthesis" in window)) {
+          playSynthesizedVocalCue();
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(appState.voiceMessage);
+        utterance.pitch = 1.32;
+        utterance.rate = 0.96;
+        utterance.volume = 1.0;
+
+        const voices = window.speechSynthesis.getVoices();
+        const femaleVoice = selectFemaleSpeechVoice(voices);
+        if (femaleVoice) utterance.voice = femaleVoice;
+
+        utterance.onerror = () => playSynthesizedVocalCue();
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        playSynthesizedVocalCue();
+      }
+    }
+
+    // Gentle synthesized vocal-like chime cue fallback if TTS is unavailable
+    function playSynthesizedVocalCue() {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+      const notes = [523.25, 659.25, 783.99, 659.25];
+      notes.forEach((f, i) => {
+        const t = ctx.currentTime + i * 0.22;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.14, t + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      });
+    }
+
+    function playBellAndVoiceOnce() {
+      playReceptionBellChime();
+      setTimeout(() => speakFemaleAnnouncement(), 450);
+    }
+
+    function startAssemblyBell() {
+      ensureAudioContext();
+      appState.bellLooping = true;
+      appState.bellRangAt = getNowClock();
+      appState.acknowledgedIds = [];
+
+      clearInterval(bellInterval);
+      clearInterval(voiceInterval);
+
+      playBellAndVoiceOnce();
+
+      // Continues ringing until stopped or acknowledged
+      bellInterval = setInterval(() => {
+        if (appState.bellLooping) {
+          playReceptionBellChime();
+        }
+      }, 2600);
+
+      voiceInterval = setInterval(() => {
+        if (appState.bellLooping) {
+          speakFemaleAnnouncement();
+        }
+      }, 6500);
+
+      renderShell();
+      showToast("🔔 Bell & Female Voice Ringing! Stop ya Acknowledge dabayein.");
+      saveAndBroadcast("Assembly Bell & Female Voice Ringing!");
+    }
+
+    function acknowledgeAndStopBell() {
+      if (!appState.acknowledgedIds.includes(1)) {
+        appState.acknowledgedIds.push(1);
+      }
+      stopAssemblyBell(false);
+      showToast("✓ Acknowledged — Bell Stopped");
+      saveAndBroadcast("Staff Acknowledged & Bell Stopped");
+    }
+
+    function stopAssemblyBell(notify = true) {
+      appState.bellLooping = false;
+      clearInterval(bellInterval);
+      clearInterval(voiceInterval);
+      bellInterval = null;
+      voiceInterval = null;
+      try {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+      } catch (e) {}
+      renderShell();
+      if (notify) {
+        showToast("⏹ Assembly Bell Stopped");
+        saveAndBroadcast("Assembly Bell Stopped");
+      }
+    }
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
+    /* =====================================================================
+       4. AUTH, NAVIGATION & TOAST HELPERS
+       ===================================================================== */
+    function getNowClock() {
+      return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function showToast(text) {
+      const area = document.getElementById("toast-area");
+      const div = document.createElement("div");
+      div.className = "toast-msg";
+      div.textContent = text;
+      area.appendChild(div);
+      setTimeout(() => {
+        div.remove();
+      }, 3200);
+    }
+
+    function quickFillCredentials() {
+      document.getElementById("login-mobile").value = AUTH_MOBILE;
+      document.getElementById("login-otp").value = AUTH_OTP;
+      document.getElementById("login-error").classList.add("hidden");
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      ensureAudioContext();
+      const mob = document.getElementById("login-mobile").value.trim();
+      const otp = document.getElementById("login-otp").value.trim();
+      const err = document.getElementById("login-error");
+
+      if (mob === AUTH_MOBILE && otp === AUTH_OTP) {
+        appState.authenticated = true;
+        err.classList.add("hidden");
+        renderShell();
+        showToast("Welcome Back, Admin — MAHADEV VILLA");
+      } else {
+        err.textContent = "Invalid Mobile or OTP. Use 9351948543 and OTP 2956.";
+        err.classList.remove("hidden");
+      }
+    }
+
+    function logoutApp() {
+      stopAssemblyBell(false);
+      appState.authenticated = false;
+      appState.activeBottomTab = "home";
+      document.getElementById("login-mobile").value = "";
+      document.getElementById("login-otp").value = "";
+      renderShell();
+      showToast("Logged out");
+    }
+
+    function selectModule(modId) {
+      if (modId === "home") {
+        appState.activeModule = "duty";
+        appState.activeBottomTab = "home";
+      } else {
+        appState.activeModule = modId;
+        appState.activeBottomTab = modId === "reports" ? "reports" : "home";
+      }
+      renderShell();
+    }
+
+    function bottomNavAction(tab) {
+      if (tab === "logout") {
+        logoutApp();
+        return;
+      }
+      appState.activeBottomTab = tab;
+      if (tab === "home") {
+        appState.activeModule = "duty";
+      } else if (tab === "reports") {
+        appState.activeModule = "reports";
+      } else if (tab === "profile") {
+        appState.activeModule = "staff";
+      }
+      renderShell();
+    }
+
+    /* =====================================================================
+       5. MODULE RENDERERS & INTERACTIVE ACTIONS
+       ===================================================================== */
+    function renderModuleGrids() {
+      const grid12 = document.getElementById("grid-12");
+      const grid2 = document.getElementById("grid-2");
+
+      grid12.innerHTML = TOP_12_MODULES.map((m) => `
+        <button type="button" class="villa-tile ${appState.activeModule === m.id ? "selected" : ""}" onclick="selectModule('${m.id}')">
+          ${renderModuleSvg(m.icon)}
+          <span class="villa-tile-label">${m.label}</span>
+        </button>
+      `).join("");
+
+      grid2.innerHTML = BOTTOM_2_MODULES.map((m) => `
+        <button type="button" class="villa-tile ${appState.activeModule === m.id ? "selected" : ""}" onclick="selectModule('${m.id}')">
+          ${renderModuleSvg(m.icon)}
+          <span class="villa-tile-label">${m.label}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderWorkspace() {
+      const ws = document.getElementById("module-workspace");
+      const modId = appState.activeModule;
+
+      if (modId === "staff") {
+        const presentCount = appState.staff.filter((x) => x.attendanceStatus === "Present").length;
+        const absentCount = appState.staff.filter((x) => x.attendanceStatus === "Absent").length;
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Staff Management</div>
+              <div class="surface-sub">Sabhi staff ka naam, field, duty aur Present/Absent status — real time mein sabke phone par live</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <span class="pill pill-green">Present: ${presentCount}</span>
+              <span class="pill pill-rose">Absent: ${absentCount}</span>
+            </div>
+          </div>
+
+          <form onsubmit="addStaffMember(event)" class="grid-form">
+            <input id="new-staff-name" type="text" class="input" placeholder="Staff Name" required />
+            <select id="new-staff-field" class="select">
+              ${FIELDS_LIST.map((f) => `<option value="${f}">${f}</option>`).join("")}
+            </select>
+            <button type="submit" class="btn btn-primary">+ Add Staff</button>
+          </form>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff Name</th>
+                  <th>Field / Department</th>
+                  <th>Present / Absent</th>
+                  <th>Aaj Ka Kaam</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.staff.map((s) => {
+                  const isPresent = s.attendanceStatus === "Present";
+                  return `
+                    <tr>
+                      <td><strong>${s.name}</strong></td>
+                      <td>
+                        <select class="select" onchange="changeStaffField(${s.id}, this.value)">
+                          ${FIELDS_LIST.map((f) => `<option value="${f}" ${s.field === f ? "selected" : ""}>${f}</option>`).join("")}
+                        </select>
+                      </td>
+                      <td>
+                        <span class="pill ${isPresent ? "pill-green" : "pill-rose"}">${s.attendanceStatus}</span>
+                        <div style="margin-top:5px;">
+                          <button type="button" class="btn btn-soft" onclick="toggleAttendanceStatus(${s.id})">
+                            ${isPresent ? "Mark Absent" : "Mark Present"}
+                          </button>
+                        </div>
+                      </td>
+                      <td style="font-size:11.5px;">${s.shiftSlots["09:00 AM – 01:00 PM"]}</td>
+                      <td><strong>${s.score}/100</strong></td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "attendance") {
+        const presentList = appState.staff.filter((x) => x.attendanceStatus === "Present").map((x) => x.name);
+        const absentList = appState.staff.filter((x) => x.attendanceStatus === "Absent").map((x) => x.name);
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Attendance Management</div>
+              <div class="surface-sub">Kaun present hai, kaun absent hai, aur kaun kab duty par aaya ya gaya</div>
+            </div>
+          </div>
+
+          <div class="room-lookup-banner" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:12px;">
+            <div><strong>Present Today:</strong> ${presentList.length ? presentList.join(", ") : "None"}</div>
+            <div><strong style="color:var(--rose);">Absent Today:</strong> ${absentList.length ? absentList.join(", ") : "None"}</div>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Status</th>
+                  <th>Check-In</th>
+                  <th>Check-Out</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.staff.map((s) => `
+                  <tr>
+                    <td><strong>${s.name}</strong><div style="font-size:11px;color:var(--ink-muted);">${s.field}</div></td>
+                    <td><span class="pill ${s.attendanceStatus === "Present" ? "pill-green" : "pill-rose"}">${s.attendanceStatus}</span></td>
+                    <td><span class="pill pill-green">${s.checkIn}</span></td>
+                    <td><span class="pill pill-amber">${s.checkOut}</span></td>
+                    <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                      <button type="button" class="btn btn-emerald" onclick="markAttendance(${s.id}, 'in')">Duty In</button>
+                      <button type="button" class="btn btn-rose" onclick="markAttendance(${s.id}, 'absent')">Absent</button>
+                      <button type="button" class="btn btn-soft" onclick="markAttendance(${s.id}, 'out')">Duty Out</button>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "leave") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Leave Management</div>
+              <div class="surface-sub">Kab se kab tak chhutti chahiye aur kyon chahiye — approve ya reject karein</div>
+            </div>
+          </div>
+
+          <form onsubmit="submitLeaveRequest(event)" class="grid-form">
+            <select id="leave-staff" class="select">
+              ${appState.staff.map((s) => `<option value="${s.name}">${s.name}</option>`).join("")}
+            </select>
+            <input id="leave-from" type="date" class="input" required />
+            <input id="leave-to" type="date" class="input" required />
+            <input id="leave-reason" type="text" class="input" placeholder="Kyon chahiye? (Reason)" required />
+            <button type="submit" class="btn btn-primary">Apply Leave</button>
+          </form>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Dates</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.leaves.map((l) => `
+                  <tr>
+                    <td><strong>${l.staff}</strong></td>
+                    <td>${l.fromDate} → ${l.toDate}</td>
+                    <td>${l.reason}</td>
+                    <td><span class="pill ${l.status === "Approved" ? "pill-green" : l.status === "Rejected" ? "pill-rose" : "pill-amber"}">${l.status}</span></td>
+                    <td style="display:flex;gap:5px;">
+                      <button type="button" class="btn btn-emerald" onclick="setLeaveStatus(${l.id}, 'Approved')">Approve</button>
+                      <button type="button" class="btn btn-rose" onclick="setLeaveStatus(${l.id}, 'Rejected')">Reject</button>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "duty") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Duty Management (9:00 AM – 9:00 PM)</div>
+              <div class="surface-sub">Column 1: Bell Boy / Staff Name &bull; Column 2: Shift timings &amp; kaam (laundry, towel, check-in)</div>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:28%;">Column 1: Bell Boy / Staff</th>
+                  <th>Column 2: Shift Timing &amp; Duty Assignment</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.staff.map((s) => `
+                  <tr>
+                    <td>
+                      <div style="font-size:14px;font-weight:900;">${s.name}</div>
+                      <div style="font-size:11px;color:var(--ink-muted);margin-top:2px;">${s.field}</div>
+                    </td>
+                    <td>
+                      ${Object.entries(s.shiftSlots).map(([slot, task]) => `
+                        <div class="slot-box">
+                          <div class="slot-time">${slot}</div>
+                          <input type="text" class="input" value="${task}" onchange="updateShiftSlot(${s.id}, '${slot}', this.value)" />
+                        </div>
+                      `).join("")}
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "laundry") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Laundry Management</div>
+              <div class="surface-sub">Aaj laundry field duty kis staff ki aur kis shift mein lagi hai</div>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Field</th>
+                  <th>Aaj Ki Laundry Duty</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.staff.map((s) => {
+                  const laundrySlot = Object.entries(s.shiftSlots).find(([_, v]) => v.toLowerCase().includes("laundry"));
+                  return `
+                    <tr>
+                      <td><strong>${s.name}</strong></td>
+                      <td><span class="pill ${s.field === "Laundry Field" ? "pill-green" : "pill-amber"}">${s.field}</span></td>
+                      <td>${laundrySlot ? `<strong>${laundrySlot[0]}:</strong> ${laundrySlot[1]}` : s.shiftSlots["09:00 AM – 01:00 PM"]}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "towel") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Towel Duty Management (9:00 AM – 9:00 PM)</div>
+              <div class="surface-sub">1:00–2:00 PM, 2:00–4:00 PM aur 4:00–9:00 PM towel slots</div>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time Slot</th>
+                  <th>Assigned Staff</th>
+                  <th>Towel Duty Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.towelSchedule.map((t, idx) => `
+                  <tr>
+                    <td><strong>${t.slot}</strong></td>
+                    <td>
+                      <select class="select" onchange="assignTowelSlot(${idx}, this.value)">
+                        ${appState.staff.map((s) => `<option value="${s.name}" ${t.assignee === s.name ? "selected" : ""}>${s.name}</option>`).join("")}
+                      </select>
+                    </td>
+                    <td>${t.detail}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "bellboy") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Bellboy Management</div>
+              <div class="surface-sub">Live free/busy status aur lobby assembly call</div>
+            </div>
+            <button type="button" class="btn btn-rose" onclick="startAssemblyBell()">🔔 Call All Bell Boys to Lobby</button>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bell Boy</th>
+                  <th>Status</th>
+                  <th>Current Task</th>
+                  <th>Toggle Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.staff.map((s) => `
+                  <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td><span class="pill ${s.bellStatus === "Free" ? "pill-green" : "pill-amber"}">${s.bellStatus}</span></td>
+                    <td>${s.shiftSlots["09:00 AM – 01:00 PM"]}</td>
+                    <td>
+                      <button type="button" class="btn btn-soft" onclick="toggleBellboyBusy(${s.id})">
+                        ${s.bellStatus === "Free" ? "Mark Busy" : "Mark Free"}
+                      </button>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "inspection") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Room Inspection &amp; Check-In Time</div>
+              <div class="surface-sub">Guest ko room dene se pehle clean &amp; no-damage check karein; submit karte hi check-in time auto-record hoga</div>
+            </div>
+          </div>
+
+          <form onsubmit="recordRoomInspection(event)" class="grid-form">
+            <input id="insp-room" type="text" class="input" placeholder="Room No (e.g. Room 301)" required />
+            <input id="insp-guest" type="text" class="input" placeholder="Guest Name" required />
+            <select id="insp-staff" class="select">
+              ${appState.staff.map((s) => `<option value="${s.name}">${s.name}</option>`).join("")}
+            </select>
+            <button type="submit" class="btn btn-emerald">✓ Submit &amp; Log Check-In Time</button>
+          </form>
+
+          <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;font-weight:700;margin-bottom:12px;">
+            <label style="display:flex;align-items:center;gap:6px;"><input id="chk-clean" type="checkbox" checked /> Clean Room</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input id="chk-damage" type="checkbox" checked /> No Damage / Breakage</label>
+            <label style="display:flex;align-items:center;gap:6px;"><input id="chk-amen" type="checkbox" checked /> AC / Lights / Bath Ready</label>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Room &amp; Guest</th>
+                  <th>Checked By</th>
+                  <th>Condition</th>
+                  <th>Check-In Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.inspections.map((r) => `
+                  <tr>
+                    <td><strong>${r.room}</strong> — ${r.guest}</td>
+                    <td>${r.staff}</td>
+                    <td><span class="pill ${r.clean && r.noDamage ? "pill-green" : "pill-rose"}">${r.clean && r.noDamage ? "Clean & Intact" : "Check Required"}</span></td>
+                    <td><span class="pill pill-amber">${r.checkInTime}</span></td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "complaint") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Complaint Management</div>
+              <div class="surface-sub">Room ki complaints darj karein aur solve mark karein</div>
+            </div>
+          </div>
+
+          <form onsubmit="addComplaintItem(event)" class="grid-form">
+            <input id="comp-room" type="text" class="input" placeholder="Room No (e.g. Room 202)" required />
+            <input id="comp-issue" type="text" class="input" placeholder="Complaint detail" required />
+            <select id="comp-staff" class="select">
+              ${appState.staff.map((s) => `<option value="${s.name}">${s.name}</option>`).join("")}
+            </select>
+            <button type="submit" class="btn btn-rose">+ Add Complaint</button>
+          </form>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Room</th>
+                  <th>Issue</th>
+                  <th>Staff</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${appState.complaints.map((c) => `
+                  <tr>
+                    <td><strong>${c.room}</strong></td>
+                    <td>${c.issue}</td>
+                    <td>${c.staff}</td>
+                    <td><span class="pill ${c.status === "Solved" ? "pill-green" : "pill-rose"}">${c.status}</span></td>
+                    <td>
+                      ${c.status !== "Solved"
+                        ? `<button type="button" class="btn btn-emerald" onclick="resolveComplaint(${c.id})">Solve</button>`
+                        : `<span style="font-size:11px;font-weight:700;color:var(--emerald);">Done</span>`}
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "performance") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Staff Performance (Score Out of 100)</div>
+              <div class="surface-sub">Har staff ka performance score check-ins aur kaam ke hisab se</div>
+            </div>
+          </div>
+          ${appState.staff.map((s) => `
+            <div class="slot-box">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <strong>${s.name}</strong> <span style="font-size:11px;color:var(--ink-muted);">(${s.field} &bull; Check-ins: ${s.checkInsCount})</span>
+                </div>
+                <strong style="font-size:14px;">${s.score} / 100</strong>
+              </div>
+              <div class="score-track">
+                <div class="score-fill" style="width:${s.score}%;"></div>
+              </div>
+            </div>
+          `).join("")}
+        `;
+      } else if (modId === "inventory") {
+        const roomQ = (appState.roomSearchQuery || "").trim().toLowerCase();
+        const itemQ = (appState.itemSearchQuery || "").trim().toLowerCase();
+
+        const roomMatches = roomQ
+          ? appState.inventory.filter((x) => x.room.toLowerCase().includes(roomQ))
+          : [];
+
+        const filtered = appState.inventory.filter((x) => {
+          const matchesRoom = !roomQ || x.room.toLowerCase().includes(roomQ);
+          const matchesItem =
+            !itemQ ||
+            x.item.toLowerCase().includes(itemQ) ||
+            x.room.toLowerCase().includes(itemQ) ||
+            x.givenBy.toLowerCase().includes(itemQ);
+          return matchesRoom && matchesItem;
+        });
+
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Inventory Management &amp; Room Search</div>
+              <div class="surface-sub">Hair Dryer, Hot Water Kettle, Comb, Iron — room number search karke dekhein is room mein kaunsa item kab aur kisne diya</div>
+            </div>
+          </div>
+
+          <!-- Dedicated Room Number Search Box -->
+          <div class="room-lookup-banner">
+            <label class="field-label" for="inv-room-search">Search by Room Number (e.g., 101, 102, 204)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <input
+                id="inv-room-search"
+                type="text"
+                class="input"
+                style="max-width:260px;"
+                value="${appState.roomSearchQuery}"
+                placeholder="Room number dalein (e.g. 101)..."
+                oninput="updateRoomSearch(this.value)"
+              />
+              <button type="button" class="btn btn-primary" onclick="focusRoomSearch('101')">Room 101</button>
+              <button type="button" class="btn btn-primary" onclick="focusRoomSearch('204')">Room 204</button>
+              <button type="button" class="btn btn-soft" onclick="resetInventoryFilters()">Clear Search</button>
+            </div>
+
+            ${roomQ ? `
+              <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #c5963a;">
+                <div style="font-size:12px;font-weight:800;color:var(--espresso);margin-bottom:6px;">
+                  Room Search Result for "${appState.roomSearchQuery}" (${roomMatches.length} item records):
+                </div>
+                ${roomMatches.length ? `
+                  <div class="table-scroll">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Room</th>
+                          <th>Item</th>
+                          <th>Kab Gaya (Time)</th>
+                          <th>Kisne Diya</th>
+                          <th>Return Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${roomMatches.map((rm) => `
+                          <tr>
+                            <td><strong>${rm.room}</strong></td>
+                            <td><strong>${rm.item}</strong></td>
+                            <td><span class="pill pill-amber">${rm.givenTime}</span></td>
+                            <td><strong>${rm.givenBy}</strong></td>
+                            <td>
+                              ${rm.activeInRoom
+                                ? `<span class="pill pill-rose">Room Mein Hai (${rm.givenTime} se)</span>`
+                                : `<span class="pill pill-green">Returned at ${rm.returnTime || "--:--"}</span>`}
+                            </td>
+                          </tr>
+                        `).join("")}
+                      </tbody>
+                    </table>
+                  </div>
+                ` : `<div style="font-size:12px;color:var(--ink-muted);">Is room number ke liye koi item record nahi mila.</div>`}
+              </div>
+            ` : ""}
+          </div>
+
+          <!-- Issue Item Form -->
+          <form onsubmit="issueInventory(event)" class="grid-form">
+            <select id="inv-item" class="select">
+              ${appState.catalogItems.map((it) => `<option value="${it}">${it}</option>`).join("")}
+            </select>
+            <input id="inv-room" type="text" class="input" list="room-suggestions" placeholder="Room No (e.g. Room 106)" required />
+            <datalist id="room-suggestions">
+              ${appState.roomsList.map((rm) => `<option value="${rm}">`).join("")}
+            </datalist>
+            <select id="inv-staff" class="select">
+              ${appState.staff.map((s) => `<option value="${s.name}">${s.name}</option>`).join("")}
+            </select>
+            <button type="submit" class="btn btn-primary">Send to Room</button>
+          </form>
+
+          <!-- Item / Swap Search Controls -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:11px;">
+            <input id="inv-query" type="text" class="input" style="max-width:260px;" value="${appState.itemSearchQuery}" placeholder="Search Iron, Kettle, Hair Dryer, Comb..." oninput="updateItemSearch(this.value)" />
+            <button type="button" class="btn btn-gold" onclick="quickSearchIron()">Find Iron in Rooms</button>
+            <button type="button" class="btn btn-soft" onclick="resetInventoryFilters()">Show All</button>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Room</th>
+                  <th>Dene Gaya (Staff &amp; Time)</th>
+                  <th>Wapas Laya (Staff &amp; Time)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filtered.map((row) => `
+                  <tr>
+                    <td><strong>${row.item}</strong></td>
+                    <td>
+                      <span class="pill ${row.activeInRoom ? "pill-amber" : "pill-green"}">${row.room}</span>
+                      <div style="font-size:10.5px;color:var(--ink-muted);margin-top:2px;">
+                        ${row.activeInRoom ? "Abhi is room mein hai" : "Wapas stock mein"}
+                      </div>
+                    </td>
+                    <td>${row.givenBy} <strong>(${row.givenTime})</strong></td>
+                    <td>
+                      ${row.returnTime
+                        ? `${row.returnedBy || "Staff"} <strong>(${row.returnTime})</strong>`
+                        : `<span style="color:var(--rose);font-weight:700;">Pending return</span>`}
+                    </td>
+                    <td>
+                      ${row.activeInRoom
+                        ? `<button type="button" class="btn btn-emerald" onclick="returnInventory(${row.id})">Return</button>`
+                        : `<span class="pill pill-green">Returned</span>`}
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (modId === "reports") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Reports &amp; History</div>
+              <div class="surface-sub">Room check-ins, leaves, aur inventory records ka log</div>
+            </div>
+          </div>
+          <div class="slot-box">
+            <div class="slot-time">Recent Room Check-Ins</div>
+            ${appState.inspections.map((i) => `<div style="font-size:12px;margin-top:4px;">&bull; <strong>${i.room}</strong> (${i.guest}) by ${i.staff} at <strong>${i.checkInTime}</strong></div>`).join("")}
+          </div>
+          <div class="slot-box">
+            <div class="slot-time">Summary Counts</div>
+            <div style="font-size:12px;">Staff: <strong>${appState.staff.length}</strong> &bull; Inspections: <strong>${appState.inspections.length}</strong> &bull; Leaves: <strong>${appState.leaves.length}</strong> &bull; Inventory Logs: <strong>${appState.inventory.length}</strong></div>
+          </div>
+        `;
+      } else if (modId === "settings") {
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Admin Settings</div>
+              <div class="surface-sub">Assembly Bell ki female voice announcement text edit karein</div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="voice-text-input">Female Voice Announcement</label>
+            <input id="voice-text-input" type="text" class="input" value="${appState.voiceMessage}" />
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button type="button" class="btn btn-primary" onclick="saveVoiceText()">Save Announcement</button>
+            <button type="button" class="btn btn-rose" onclick="startAssemblyBell()">🔔 Test Bell + Female Voice</button>
+          </div>
+        `;
+      } else if (modId === "premium") {
+        const top = [...appState.staff].sort((a, b) => b.score - a.score)[0];
+        const activeRooms = appState.inventory.filter((x) => x.activeInRoom).length;
+        const presentCnt = appState.staff.filter((s) => s.attendanceStatus === "Present").length;
+        const absentCnt = appState.staff.filter((s) => s.attendanceStatus === "Absent").length;
+        ws.innerHTML = `
+          <div class="surface-head">
+            <div>
+              <div class="surface-title">Premium Dashboard</div>
+              <div class="surface-sub">MAHADEV VILLA real-time live summary</div>
+            </div>
+          </div>
+          <div class="slot-box">
+            <div class="slot-time">Top Performer</div>
+            <div style="font-size:14px;font-weight:900;">🏆 ${top.name} — ${top.score} / 100 (${top.field})</div>
+          </div>
+          <div class="slot-box">
+            <div class="slot-time">Live Operations Snapshot</div>
+            <div style="font-size:12.5px;">Present: <strong>${presentCnt}</strong> &bull; Absent: <strong>${absentCnt}</strong> &bull; Active Room Items: <strong>${activeRooms}</strong> &bull; Open Complaints: <strong>${appState.complaints.filter((c) => c.status !== "Solved").length}</strong></div>
+          </div>
+        `;
+      }
+    }
+
+    /* =====================================================================
+       6. DATA UPDATE ACTIONS
+       ===================================================================== */
+    function addStaffMember(e) {
+      e.preventDefault();
+      const name = document.getElementById("new-staff-name").value.trim();
+      const field = document.getElementById("new-staff-field").value;
+      if (!name) return;
+
+      appState.staff.push({
+        id: Date.now(),
+        name,
+        field,
+        bellStatus: "Free",
+        onDuty: true,
+        attendanceStatus: "Present",
+        checkIn: getNowClock(),
+        checkOut: "--:--",
+        score: 90,
+        checkInsCount: 0,
+        shiftSlots: {
+          "09:00 AM – 01:00 PM": `${field} morning shift`,
+          "01:00 PM – 04:00 PM": `${field} afternoon shift`,
+          "04:00 PM – 09:00 PM": `${field} evening shift`
+        }
+      });
+      document.getElementById("new-staff-name").value = "";
+      renderShell();
+      showToast(`${name} added to Staff Management`);
+      saveAndBroadcast(`${name} added (${field})`);
+    }
+
+    function changeStaffField(id, newField) {
+      const s = appState.staff.find((x) => x.id === id);
+      if (!s) return;
+      s.field = newField;
+      renderShell();
+      showToast(`${s.name} field updated to ${newField}`);
+      saveAndBroadcast(`${s.name} field -> ${newField}`);
+    }
+
+    function toggleAttendanceStatus(id) {
+      const s = appState.staff.find((x) => x.id === id);
+      if (!s) return;
+      if (s.attendanceStatus === "Present") {
+        s.attendanceStatus = "Absent";
+        s.onDuty = false;
+      } else {
+        s.attendanceStatus = "Present";
+        s.onDuty = true;
+        if (s.checkIn === "--:--") s.checkIn = getNowClock();
+      }
+      renderShell();
+      showToast(`${s.name} marked ${s.attendanceStatus}`);
+      saveAndBroadcast(`${s.name} is ${s.attendanceStatus}`);
+    }
+
+    function markAttendance(id, mode) {
+      const s = appState.staff.find((x) => x.id === id);
+      if (!s) return;
+      if (mode === "in") {
+        s.attendanceStatus = "Present";
+        s.onDuty = true;
+        s.checkIn = getNowClock();
+        s.checkOut = "--:--";
+        s.score = Math.min(100, s.score + 1);
+      } else if (mode === "absent") {
+        s.attendanceStatus = "Absent";
+        s.onDuty = false;
+      } else {
+        s.onDuty = false;
+        s.checkOut = getNowClock();
+      }
+      renderShell();
+      showToast(`${s.name} attendance updated`);
+      saveAndBroadcast(`${s.name} attendance: ${s.attendanceStatus}`);
+    }
+
+    function updateShiftSlot(id, slotKey, newVal) {
+      const s = appState.staff.find((x) => x.id === id);
+      if (!s) return;
+      s.shiftSlots[slotKey] = newVal;
+      renderShell();
+      showToast(`${s.name} (${slotKey}) duty updated`);
+      saveAndBroadcast(`${s.name} duty updated (${slotKey})`);
+    }
+
+    function assignTowelSlot(idx, staffName) {
+      if (!appState.towelSchedule[idx]) return;
+      appState.towelSchedule[idx].assignee = staffName;
+      renderShell();
+      showToast(`Towel slot assigned to ${staffName}`);
+      saveAndBroadcast(`Towel slot -> ${staffName}`);
+    }
+
+    function toggleBellboyBusy(id) {
+      const s = appState.staff.find((x) => x.id === id);
+      if (!s) return;
+      s.bellStatus = s.bellStatus === "Free" ? "Busy (Guest Task)" : "Free";
+      renderShell();
+      showToast(`${s.name} status: ${s.bellStatus}`);
+      saveAndBroadcast(`${s.name}: ${s.bellStatus}`);
+    }
+
+    function recordRoomInspection(e) {
+      e.preventDefault();
+      const room = document.getElementById("insp-room").value.trim();
+      const guest = document.getElementById("insp-guest").value.trim();
+      const staff = document.getElementById("insp-staff").value;
+      const clean = document.getElementById("chk-clean").checked;
+      const noDamage = document.getElementById("chk-damage").checked;
+      const amenitiesOk = document.getElementById("chk-amen").checked;
+      const checkInTime = getNowClock();
+
+      appState.inspections.unshift({
+        id: Date.now(),
+        room,
+        guest,
+        staff,
+        clean,
+        noDamage,
+        amenitiesOk,
+        checkInTime
+      });
+
+      const member = appState.staff.find((x) => x.name === staff);
+      if (member) {
+        member.checkInsCount += 1;
+        member.score = Math.min(100, member.score + 1);
+      }
+
+      document.getElementById("insp-room").value = "";
+      document.getElementById("insp-guest").value = "";
+      renderShell();
+      showToast(`${room} check-in time recorded at ${checkInTime}`);
+      saveAndBroadcast(`${room} check-in logged at ${checkInTime}`);
+    }
+
+    function addComplaintItem(e) {
+      e.preventDefault();
+      const room = document.getElementById("comp-room").value.trim();
+      const issue = document.getElementById("comp-issue").value.trim();
+      const staff = document.getElementById("comp-staff").value;
+
+      appState.complaints.unshift({
+        id: Date.now(),
+        room,
+        issue,
+        staff,
+        status: "Open"
+      });
+      document.getElementById("comp-room").value = "";
+      document.getElementById("comp-issue").value = "";
+      renderShell();
+      showToast(`Complaint added for ${room}`);
+      saveAndBroadcast(`New complaint in ${room}`);
+    }
+
+    function resolveComplaint(id) {
+      const c = appState.complaints.find((x) => x.id === id);
+      if (!c) return;
+      c.status = "Solved";
+      renderShell();
+      showToast(`${c.room} complaint marked Solved`);
+      saveAndBroadcast(`${c.room} complaint solved`);
+    }
+
+    function issueInventory(e) {
+      e.preventDefault();
+      const item = document.getElementById("inv-item").value;
+      const rawRoom = document.getElementById("inv-room").value.trim();
+      const room = /^room\s+/i.test(rawRoom) ? rawRoom : `Room ${rawRoom}`;
+      const givenBy = document.getElementById("inv-staff").value;
+      const givenTime = getNowClock();
+
+      appState.inventory.unshift({
+        id: Date.now(),
+        item,
+        room,
+        givenBy,
+        givenTime,
+        returnedBy: null,
+        returnTime: null,
+        activeInRoom: true
+      });
+      document.getElementById("inv-room").value = "";
+      renderShell();
+      showToast(`${item} sent to ${room} at ${givenTime}`);
+      saveAndBroadcast(`${item} sent to ${room} by ${givenBy}`);
+    }
+
+    function returnInventory(id) {
+      const row = appState.inventory.find((x) => x.id === id);
+      if (!row) return;
+      row.activeInRoom = false;
+      row.returnTime = getNowClock();
+      row.returnedBy = "Admin / Staff";
+      renderShell();
+      showToast(`${row.item} returned from ${row.room}`);
+      saveAndBroadcast(`${row.item} returned from ${row.room}`);
+    }
+
+    function updateRoomSearch(val) {
+      const cursorPos = document.getElementById("inv-room-search")?.selectionStart ?? val.length;
+      appState.roomSearchQuery = val;
+      renderWorkspace();
+      const nextInput = document.getElementById("inv-room-search");
+      if (nextInput) {
+        nextInput.focus();
+        try { nextInput.setSelectionRange(cursorPos, cursorPos); } catch (e) {}
+      }
+    }
+
+    function focusRoomSearch(roomNum) {
+      appState.roomSearchQuery = roomNum;
+      renderWorkspace();
+    }
+
+    function updateItemSearch(val) {
+      const cursorPos = document.getElementById("inv-query")?.selectionStart ?? val.length;
+      appState.itemSearchQuery = val;
+      renderWorkspace();
+      const nextInput = document.getElementById("inv-query");
+      if (nextInput) {
+        nextInput.focus();
+        try { nextInput.setSelectionRange(cursorPos, cursorPos); } catch (e) {}
+      }
+    }
+
+    function quickSearchIron() {
+      appState.itemSearchQuery = "Iron";
+      renderWorkspace();
+    }
+
+    function resetInventoryFilters() {
+      appState.roomSearchQuery = "";
+      appState.itemSearchQuery = "";
+      renderWorkspace();
+    }
+
+    function submitLeaveRequest(e) {
+      e.preventDefault();
+      const staff = document.getElementById("leave-staff").value;
+      const fromDate = document.getElementById("leave-from").value;
+      const toDate = document.getElementById("leave-to").value;
+      const reason = document.getElementById("leave-reason").value.trim();
+
+      appState.leaves.unshift({
+        id: Date.now(),
+        staff,
+        fromDate,
+        toDate,
+        reason,
+        status: "Pending"
+      });
+      document.getElementById("leave-from").value = "";
+      document.getElementById("leave-to").value = "";
+      document.getElementById("leave-reason").value = "";
+      renderShell();
+      showToast(`Leave request submitted for ${staff}`);
+      saveAndBroadcast(`Leave requested by ${staff}`);
+    }
+
+    function setLeaveStatus(id, status) {
+      const item = appState.leaves.find((x) => x.id === id);
+      if (!item) return;
+      item.status = status;
+      renderShell();
+      showToast(`${item.staff} leave ${status}`);
+      saveAndBroadcast(`${item.staff} leave ${status}`);
+    }
+
+    function saveVoiceText() {
+      const el = document.getElementById("voice-text-input");
+      if (!el || !el.value.trim()) return;
+      appState.voiceMessage = el.value.trim();
+      renderShell();
+      showToast("Female voice announcement updated");
+      saveAndBroadcast("Bell voice message updated");
+    }
+
+    /* =====================================================================
+       7. MASTER RENDER SHELL
+       ===================================================================== */
+    function renderShell() {
+      const loginView = document.getElementById("login-view");
+      const mainView = document.getElementById("main-app-view");
+      const bottomNav = document.getElementById("bottom-nav-wrap");
+
+      if (!appState.authenticated) {
+        loginView.classList.remove("hidden");
+        mainView.classList.add("hidden");
+        bottomNav.classList.add("hidden");
+        return;
+      }
+
+      loginView.classList.add("hidden");
+      mainView.classList.remove("hidden");
+      bottomNav.classList.remove("hidden");
+
+      const bellBtn = document.getElementById("bell-top-btn");
+      const banner = document.getElementById("bell-active-banner");
+      const badge = document.getElementById("bell-badge");
+      const pendingCount = appState.leaves.filter((l) => l.status === "Pending").length;
+
+      badge.textContent = appState.bellLooping ? "🔔" : String(pendingCount);
+
+      if (appState.bellLooping) {
+        bellBtn.classList.add("ringing");
+        banner.classList.remove("hidden");
+        document.getElementById("bell-banner-text").textContent = appState.voiceMessage;
+        document.getElementById("bell-ack-count").textContent = `Ack: ${appState.acknowledgedIds.length} / ${appState.staff.length}`;
+      } else {
+        bellBtn.classList.remove("ringing");
+        banner.classList.add("hidden");
+      }
+
+      ["home", "reports", "profile"].forEach((t) => {
+        const el = document.getElementById("bnav-" + t);
+        if (el) {
+          el.classList.toggle("active", appState.activeBottomTab === t);
+        }
+      });
+
+      renderModuleGrids();
+      renderWorkspace();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadPersistedState();
+      renderShell();
+    });
+  </script>
+</body>
+</html>
