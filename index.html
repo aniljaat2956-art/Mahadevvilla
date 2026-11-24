@@ -2451,5 +2451,58 @@
       renderShell();
     });
   </script>
-</body>
+<script>
+(function() {
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjE07JJ4hZxAADfPDdXxC7oW9XObCFue45v8wvDPgCnOezFXg61nNzCrdOFkdvfvGTUA/exec";
+  window.MAHADEV_VILLA_SCRIPT_URL = APPS_SCRIPT_URL;
+
+  async function mvLoadStateFromSheet() {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL + "?t=" + Date.now(), { cache: "no-store" });
+      const data = await res.json();
+      if (data && data.ok && data.state && typeof data.state === "object") {
+        Object.keys(data.state).forEach((k) => {
+          try { localStorage.setItem(k, String(data.state[k])); } catch (e) {}
+        });
+      }
+    } catch (err) {
+      console.warn("Sheet load error:", err);
+    }
+  }
+
+  async function mvPushStateToSheet() {
+    try {
+      const stateObj = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) stateObj[key] = localStorage.getItem(key);
+      }
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ key: "appState", state: stateObj })
+      });
+    } catch (err) {
+      console.warn("Sheet save error:", err);
+    }
+  }
+
+  window.mvSyncNow = mvPushStateToSheet;
+
+  document.addEventListener("click", function(e) {
+    const target = e.target && e.target.closest("button, [role='button'], input[type='submit']");
+    if (!target) return;
+    const txt = (target.innerText || target.value || "").toLowerCase();
+    if (txt.includes("save") || txt.includes("announce") || txt.includes("update") || txt.includes("submit") || txt.includes("add")) {
+      setTimeout(mvPushStateToSheet, 400);
+    }
+  }, true);
+
+  window.addEventListener("DOMContentLoaded", function() {
+    mvLoadStateFromSheet();
+  });
+})();
+</script>
+  </body>
 </html>
